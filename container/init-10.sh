@@ -1,5 +1,4 @@
 #!/bin/bash
-echo "111"
 echo "Checking for mysqld process..."
 while ! pgrep -u mysql mysqld > /dev/null; do 
   echo "mysqld not running, waiting..."
@@ -14,19 +13,19 @@ fi
 
 export DRUPAL=10
 export DRUPAL_ROOT=/var/www/html
-DB="neticrmci"
-PW="123456"
+DB="neticrm"
+PW="changeMe123456" # Please change this password to the text you generated
 export RUNPORT=8080
 
 echo "export TERM=xterm" >> /root/.bashrc
 echo "export DRUPAL_ROOT=/var/www/html" >> /root/.bashrc
-echo "export CIVICRM_TEST_DSN=mysqli://root@localhost/neticrmci" >> /root/.bashrc
-export CIVICRM_TEST_DSN=mysqli://root@localhost/neticrmci
+echo "export CIVICRM_TEST_DSN=mysqli://root@localhost/neticrm" >> /root/.bashrc
+export CIVICRM_TEST_DSN=mysqli://root@localhost/neticrm
 
 date +"@ %Y-%m-%d %H:%M:%S %z"
 echo "CI for Drupal-$DRUPAL + netiCRM"
 
-EXISTSDB=`mysql -uroot -e "SHOW DATABASES" | grep neticrmci | wc -l`
+EXISTSDB=`mysql -uroot -e "SHOW DATABASES" | grep neticrm | wc -l`
 if [ "$EXISTSDB" = "0" ]; then
   echo "Install new database $DB"
   mysql -uroot -e "CREATE DATABASE $DB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
@@ -74,6 +73,5 @@ if [ ! -f $DRUPAL_ROOT/sites/default/settings.php ]; then
   chown -R www-data /var/www/html/sites/default/files
 fi
 
-drush runserver 0.0.0.0:$RUNPORT >& /dev/null &
+drush runserver 0.0.0.0:$RUNPORT >& /dev/null & 
 until netstat -an 2>/dev/null | grep "${RUNPORT}.*LISTEN"; do true; done
-
