@@ -34,11 +34,7 @@ RUN \
     wget -qO /etc/apt/trusted.gpg.d/sury-php.gpg https://packages.sury.org/php/apt.gpg && \
     apt-get update
 
-#mariadb
-RUN \
-    apt-get install -y wget mariadb-server mariadb-backup mariadb-client
-
-# wkhtmltopdf
+# wkhtmltopdf (保留，因為可能 PHP 需要使用)
 WORKDIR /tmp
 ENV DEBIAN_FRONTEND=noninteractive
 RUN \
@@ -95,8 +91,6 @@ RUN \
   sed -i 's/^;pm\.max_requests = .*/pm.max_requests = 50/g' /etc/php/8.3/fpm/pool.d/www.conf && \
   sed -i 's/^;request_terminate_timeout = .*/request_terminate_timeout = 7200/g' /etc/php/8.3/fpm/pool.d/www.conf
 
-
-COPY container/mysql/mysql-init.sh /usr/local/bin/mysql-init.sh
 COPY container/rsyslogd/rsyslog.conf /etc/rsyslog.conf
 COPY container/supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN \
@@ -117,42 +111,6 @@ ENV \
 RUN \
   apt-get update
 
-# -------
-#phpunit
-# RUN \
-#   mkdir -p /root/phpunit/extensions && \
-#   wget -O /root/phpunit/phpunit https://phar.phpunit.de/phpunit-10.phar && \
-#   chmod +x /root/phpunit/phpunit && \
-#   cp /home/docker/php/phpunit.xml /root/phpunit/ && \
-#   echo "alias phpunit='phpunit -c ~/phpunit/phpunit.xml'" > /root/.bashrc
-
-# npm / nodejs
-# RUN \
-#   cd /tmp && \
-#   curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-#   apt-get install -y nodejs && \
-#   curl https://www.npmjs.com/install.sh | sh && \
-#   node -v && npm -v
-
-# playwright
-# RUN \
-#   sed -i 's/main$/main contrib non-free/g' /etc/apt/sources.list && apt-get update && \
-#   mkdir -p /tmp/playwright && cd /tmp/playwright && \
-#   npm install -g -D dotenv && \
-#   npm install -g -D @playwright/test && \
-#   npx playwright install --with-deps chromium
-
-# cgi
-# RUN \
-#   apt-get install -y php8.2-cgi net-tools
-
-# purge
-# RUN \
-#   apt-get remove -y gcc make autoconf libc-dev pkg-config php-pear && \
-#   apt-get autoremove -y && \
-#   apt-get clean && rm -rf /var/lib/apt/lists/*
-
-
 ### drupal download
 COPY container/drupal-download.sh /tmp
 COPY container/drupalmodule-download.sh /tmp
@@ -171,16 +129,6 @@ RUN \
 RUN \
   cd /var/www/html && composer update && composer require drush/drush
 
-# we don't have mysql setup on vanilla image
-ADD container/my.cnf /etc/mysql/my.cnf
-
-# override supervisord to prevent conflict
-# ADD container/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# add initial script
-ADD container/init-10.sh /init.sh
-
-RUN chmod +x /init.sh
-
-WORKDIR /mnt/neticrm-10/civicrm
-CMD ["/usr/bin/supervisord"]
+COPY container/start.sh /start.sh
+RUN chmod +x /start.sh
+ENTRYPOINT ["/start.sh"]
