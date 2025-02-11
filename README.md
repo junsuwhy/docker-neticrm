@@ -1,5 +1,5 @@
 # Build:
 
 ```
-docker build --t neticrm:php-only-d10 .
+docker build -t neticrm:php-only-d10 .
 ```
