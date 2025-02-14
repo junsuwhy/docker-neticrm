@@ -24,7 +24,7 @@ ENV \
 # basic packages install
 RUN \
     apt-get update && \
-    apt-get install -y rsyslog apt-transport-https wget gnupg gcc make autoconf libc-dev pkg-config google-perftools qpdf curl vim git-core supervisor procps
+    apt-get install -y rsyslog apt-transport-https wget gnupg gcc make autoconf libc-dev pkg-config google-perftools qpdf curl vim git-core supervisor procps mariadb-client
 
 # add PHP sury
 WORKDIR /etc/apt/sources.list.d
@@ -102,11 +102,6 @@ RUN \
   echo "if has('mouse')" >> /etc/vim/vimrc.local && \
   echo "  set mouse=" >> /etc/vim/vimrc.local && \
   echo "endif" >> /etc/vim/vimrc.local
-
-### ci tools
-ENV \
-  PATH=$PATH:/root/phpunit \
-  PHANTOMJS_VERSION=1.9.8
 
 RUN \
   apt-get update
